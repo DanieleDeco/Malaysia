@@ -280,3 +280,50 @@ PCA_OTUs <- ggplot2.customize(plot_PCA_otu,
                               removePanelGrid = TRUE, removePanelBorder = TRUE, showLegend = TRUE, 
                               axisLine = c(0.5, "solid", "black")) 
 ```
+##Figure S Diversity
+```
+# Load required libraries
+library(phyloseq)     # plot_richness()
+library(ggplot2)      # Base plotting 
+library(ggpubr)       # ggarrange() 
+```
+```
+#############Diversity Box plot#############
+# STEP 1: Subset phyloseq object by Season for separate analysis
+# InterMonsoon:
+InterMonsoon <- subset_samples(ps, Season %in% c("InterMonsoon"))
+
+# Monsoon: 
+Monsoon <- subset_samples(ps, Season %in% c("Monsoon"))
+
+# STEP 2: Create alpha diversity boxplot for InterMonsoon season
+# plot_richness computes Observed, Chao1, Shannon indices across Rivers
+InterMonsoon <- plot_richness(InterMonsoon,
+                   x = "River_1",                    # X-axis: River factor
+                   measures = c("Observed",          # Richness (raw OTUs)
+                                "Chao1",             # Estimated richness  
+                                "Shannon"),          # Diversity (evenness weighted)
+                   color = "River_1") +              # Color bars/points by River
+  geom_boxplot() +                             # Overlay boxplots on violin/jitter
+  theme_bw()                                   # Clean white background theme
+
+
+
+# STEP 3: Create alpha diversity boxplot for Monsoon season 
+Monsoon <- plot_richness(Monsoon,
+                   x = "River_1",
+                   measures = c("Observed",
+                                "Chao1", 
+                                "Shannon"),
+                   color = "River_1") +
+  geom_boxplot() +
+  theme_bw()
+
+
+# STEP 4: Combine plots vertically with labels
+# A = InterMonsoon (top), B = Monsoon (bottom)
+ggarrange(InterMonsoon, Monsoon,
+          ncol = 1,                         # 1 column
+          nrow = 2,                         # 2 rows (vertical)
+          labels = c("A", "B"))             # Panel labels
+```
