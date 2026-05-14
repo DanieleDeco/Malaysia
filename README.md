@@ -1,7 +1,7 @@
 # Malaysia
 
 
-## Figure 5
+## Figure 5 barplot
 
 ```
 # Load required libraries for phyloseq analysis, plotting, and arrangement
@@ -235,3 +235,4 @@ combined_plot <- ggarrange(zz_phylum, zz_class, zz_order,
                           common.legend = FALSE)
 
 ```
+## Figure S PCA
