@@ -327,3 +327,28 @@ ggarrange(InterMonsoon, Monsoon,
           nrow = 2,                         # 2 rows (vertical)
           labels = c("A", "B"))             # Panel labels
 ```
+## Figue S Venn Diagram
+
+```
+
+# Required libraries:
+# library(phyloseq)    # phyloseq object handling
+# library(MicEco)      # ps_venn() function
+
+
+# STEP 1: Venn diagram by Season - shows shared OTUs/ASVs across seasons
+
+ps_venn(ps, 
+        group = "Season",    # Groups samples by Season variable in sample_data
+        fraction = 0,        # Include taxa present in any samples (0% prevalence threshold)
+        relative = TRUE)     
+
+# STEP 2: Venn diagram by River - shows shared OTUs/ASVs across rivers
+ps_venn(ps, 
+        group = "River_1",   # Groups samples by River_1 variable in sample_data
+        fraction = 0,        # Include taxa present in any samples
+        relative = TRUE)
+```
+################################################################################################################################
+All graphs were post-processed in Affinity Designer to refine font, adjust layout details, and improve overall figure aesthetics.
+################################################################################################################################
