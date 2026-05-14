@@ -85,3 +85,9 @@ zz <- ggplot2.customize(r_16s_phylum, backgroundColor = "white",
 phylum_plot <- ggarrange(zz, labels = c("A"), legend = "right",
                         widths = c(5,5), heights = c(2,2), ncol = 1, nrow = 1)
 ```
+Pannel B
+##############################
+Class-Level Analysis Workflow
+################################
+
+
