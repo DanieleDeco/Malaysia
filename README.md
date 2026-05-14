@@ -58,7 +58,7 @@ data_avg$Phylum <- factor(data_avg$Phylum,
 
 ```
 ```
-#########
+########
 Plotting
 ########
 # STEP 7: Create base stacked bar plot
@@ -86,8 +86,72 @@ phylum_plot <- ggarrange(zz, labels = c("A"), legend = "right",
                         widths = c(5,5), heights = c(2,2), ncol = 1, nrow = 1)
 ```
 Pannel B
+```
 ##############################
 Class-Level Analysis Workflow
-################################
+##############################
 
+# STEP 1: Agglomerate ASVs/OTUs to Class level
+# tax_glom merges all taxa sharing the same Class into single entries
+# NArm=TRUE removes taxa with NA at Class level (unclassified)
+glom_class <- speedyseq::tax_glom(ps, taxrank = 'Class', NArm = TRUE)
 
+# STEP 2: Transform counts to relative abundance within each sample
+# Each sample's Class abundances now sum to 1.0 (100%)
+carbom_relative_class <- transform_sample_counts(glom_class, function(x) x / sum(x))
+
+# STEP 3: Melt phyloseq object to long-format data frame for ggplot
+# Creates columns: Sample, Description, Class, Abundance (rel. abund. 0-1)
+data_class <- psmelt(carbom_relative_class)
+
+# STEP 4: Identify and collapse rare Classes (<0.1 total relative abundance)
+# aggregate sums each Class's abundance across ALL samples
+abund_class <- aggregate(Abundance ~ Class, data_class, sum)
+# Flag Classes whose total contribution across dataset <= 10%
+rare_class <- abund_class$Class[abund_class$Abundance <= 0.1]
+# Replace all rare Class occurrences with "Others"
+data_class$Class[data_class$Class %in% rare_class] <- "Others"
+
+# STEP 5: Calculate mean relative abundance by Description group
+# aggregate computes mean abundance per Description-Class combination
+data_avg_class <- aggregate(Abundance ~ Description + Class, data_class, mean)
+# Normalize within each Description so bars sum to 100%
+data_avg_class$rel_abund <- ave(data_avg_class$Abundance, data_avg_class$Description, 
+                               FUN = function(x) x/sum(x))
+
+# STEP 6: Reorder Classes by total relative abundance (largest first)
+# tapply sums each Class across all Descriptions; sort decreasing
+data_avg_class$Class <- factor(data_avg_class$Class, 
+                              levels = names(sort(tapply(data_avg_class$rel_abund, 
+                                                         data_avg_class$Class, sum), 
+                                                  decreasing = TRUE)))
+
+```
+```
+########
+Plotting
+########
+# STEP 7: Create base stacked bar plot for CLASS
+q_class <- ggplot(data_avg_class, aes(x = Description, y = rel_abund, fill = Class))
+
+# STEP 8: Finalize CLASS plot with publication styling
+r_16s_class <- q_class +
+  geom_bar(stat = "identity", position = "stack") +  # Stack segments to 100%
+  scale_fill_manual(values = my_colors) +           # Custom colors per Class  
+  labs(fill = NULL) +                              # Remove legend title
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-labels
+        legend.position = "bottom", legend.text = element_text(size = 5),
+        legend.key.size = unit(0.5, "lines"), legend.spacing.x = unit(0.1, "cm")) +
+  guides(fill = guide_legend(reverse = TRUE))       # Reverse legend order
+
+# STEP 9: Apply custom ggplot2 styling (remove gridlines, etc.)
+zz_class <- ggplot2.customize(r_16s_class, backgroundColor = "white",
+                             removePanelGrid = TRUE, removePanelBorder = TRUE,
+                             axisLine = c(0.5, "solid", "black"),
+                             legendFontSize = 1, legendKeyWidth = 0.2, legendKeyHeight = 0.2) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# STEP 10: Arrange and label single CLASS panel
+class_plot <- ggarrange(zz_class, labels = c("B"), legend = "right",
+                       widths = c(5,5), heights = c(2,2), ncol = 1, nrow = 1)
+```
