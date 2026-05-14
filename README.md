@@ -156,3 +156,44 @@ zz_class <- ggplot2.customize(r_16s_class, backgroundColor = "white",
 class_plot <- ggarrange(zz_class, labels = c("B"), legend = "right",
                        widths = c(5,5), heights = c(2,2), ncol = 1, nrow = 1)
 ```
+Pannel C
+```
+##############################
+Order-Level Analysis Workflow
+##############################
+
+# STEP 1: Agglomerate ASVs/OTUs to Order level
+# tax_glom merges all taxa sharing the same Order into single entries
+# NArm=TRUE removes taxa with NA at Order level (unclassified)
+glom_order <- speedyseq::tax_glom(ps, taxrank = 'Order', NArm = TRUE)
+
+# STEP 2: Transform counts to relative abundance within each sample
+# Each sample's Order abundances now sum to 1.0 (100%)
+carbom_relative_order <- transform_sample_counts(glom_order, function(x) x / sum(x))
+
+# STEP 3: Melt phyloseq object to long-format data frame for ggplot
+# Creates columns: Sample, Description, Order, Abundance (rel. abund. 0-1)
+data_order <- psmelt(carbom_relative_order)
+
+# STEP 4: Identify and collapse rare Orders (<0.2 total relative abundance)
+# aggregate sums each Order's abundance across ALL samples
+abund_order <- aggregate(Abundance ~ Order, data_order, sum)
+# Flag Orders whose total contribution across dataset <= 20%
+rare_order <- abund_order$Order[abund_order$Abundance <= 0.2]
+# Replace all rare Order occurrences with "Others"
+data_order$Order[data_order$Order %in% rare_order] <- "Others"
+
+# STEP 5: Calculate mean relative abundance by Description group
+# aggregate computes mean abundance per Description-Order combination
+data_avg_order <- aggregate(Abundance ~ Description + Order, data_order, mean)
+# Normalize within each Description so bars sum to 100%
+data_avg_order$rel_abund <- ave(data_avg_order$Abundance, data_avg_order$Description, 
+                               FUN = function(x) x/sum(x))
+
+# STEP 6: Reorder Orders by total relative abundance (largest first)
+# tapply sums each Order across all Descriptions; sort decreasing
+data_avg_order$Order <- factor(data_avg_order$Order, 
+                              levels = names(sort(tapply(data_avg_order$rel_abund, 
+                                                         data_avg_order$Order, sum), 
+                                                  decreasing = TRUE)))
+```
