@@ -197,3 +197,41 @@ data_avg_order$Order <- factor(data_avg_order$Order,
                                                          data_avg_order$Order, sum), 
                                                   decreasing = TRUE)))
 ```
+```
+########
+Plotting
+########
+# STEP 8: Finalize ORDER plot with publication styling
+r_16s_order <- q_order +
+  geom_bar(stat = "identity", position = "stack") +  # Stack segments to 100%
+  scale_fill_manual(values = my_colors) +           # Custom colors per Order  
+  labs(fill = NULL) +                              # Remove legend title
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-labels
+        legend.position = "bottom", legend.text = element_text(size = 5),
+        legend.key.size = unit(0.5, "lines"), legend.spacing.x = unit(0.1, "cm")) +
+  guides(fill = guide_legend(reverse = TRUE))       # Reverse legend order
+
+# STEP 9: Apply custom ggplot2 styling (remove gridlines, etc.)
+zz_order <- ggplot2.customize(r_16s_order, backgroundColor = "white",
+                             removePanelGrid = TRUE, removePanelBorder = TRUE,
+                             axisLine = c(0.5, "solid", "black"),
+                             legendFontSize = 1, legendKeyWidth = 0.2, legendKeyHeight = 0.2) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# STEP 10: Arrange and label single ORDER panel
+order_plot <- ggarrange(zz_order, labels = c("C"), legend = "right",
+                       widths = c(5,5), heights = c(2,2), ncol = 1, nrow = 1)
+```
+```
+#####################################
+Combine the 3 pannels in a single plot
+#####################################
+combined_plot <- ggarrange(zz_phylum, zz_class, zz_order, 
+                          labels = c("A", "B", "C"),
+                          legend = "none",
+                          widths = c(1),
+                          heights = c(2,2,2),
+                          nrow = 3, ncol = 1,  # Vertical stack: 3 rows, 1 column
+                          common.legend = FALSE)
+
+```
