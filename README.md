@@ -13,6 +13,7 @@ library(tidyr)         # pivot_wider for CSV export
 library(scales)        # percent formatting for y-axis
 # Define color palette (must exist before plotting)
 my_colors <- c("#1f77b4", "Firmicutes" = "#ff7f0e", ...)
+ps=phyloseq object
 ```
 
 Pannel A
