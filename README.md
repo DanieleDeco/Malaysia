@@ -236,3 +236,47 @@ combined_plot <- ggarrange(zz_phylum, zz_class, zz_order,
 
 ```
 ## Figure S PCA
+```
+# Load required libraries
+library(phyloseq)
+library(vegan)
+library(ggbiplot)
+library(easyGgplot2)
+```
+```
+# STEP 1: Normalize OTU abundances per sample to zero mean and unit variance
+# decostand "standardize" with MARGIN=2 scales each sample (column) independently
+otu_abund_norm <- decostand(otu_table(ps), method="standardize", MARGIN=2, na.rm=TRUE)  # Fixed: na.rm=TRUE (quotes unnecessary)
+
+# STEP 2: Convert to data frame
+data_abund_meta <- as.data.frame(otu_abund_norm)
+
+# STEP 3: Remove empty rows (OTUs with all zeros across samples)
+data_abund_meta <- data_abund_meta[rowSums(data_abund_meta) > 0, ]
+
+# STEP 4: Transpose: OTUs as rows -> samples as rows (PCA on samples)
+data_PCA_otu <- t(data_abund_meta)
+
+# STEP 5: Perform PCA (center=TRUE centers vars, scale.=FALSE keeps standardized scales)
+PCA_data_norm_otu <- prcomp(data_PCA_otu, center = TRUE, scale. = FALSE)  # OK: already standardized [web:36]
+
+# STEP 6: Extract metadata from phyloseq
+metadata <- sample_data(ps)
+
+# STEP 8: Define grouping and shape variables
+groups_name <- metadata$River_1  # Colors by River
+habitat <- metadata$Season        # Shapes by Season
+
+# STEP 9: Create PCA biplot
+plot_PCA_otu <- ggbiplot::ggbiplot(PCA_data_norm_otu, choices = c(1,2), ellipse = TRUE, circle = FALSE, 
+                                   scale = 0, obs.scale = 1, var.axes = FALSE, var.scale = 1, groups = groups_name) +
+  geom_point(aes(colour = groups_name, shape = habitat), size = 4) +
+  scale_color_manual(values = c("darkorange", "darkblue", "darkgreen")) + 
+  scale_fill_manual(values = c(NA, NA, NA)) 
+
+# STEP 10: Customize plot appearance
+PCA_OTUs <- ggplot2.customize(plot_PCA_otu,
+                              backgroundColor = "white",
+                              removePanelGrid = TRUE, removePanelBorder = TRUE, showLegend = TRUE, 
+                              axisLine = c(0.5, "solid", "black")) 
+```
