@@ -280,7 +280,7 @@ PCA_OTUs <- ggplot2.customize(plot_PCA_otu,
                               removePanelGrid = TRUE, removePanelBorder = TRUE, showLegend = TRUE, 
                               axisLine = c(0.5, "solid", "black")) 
 ```
-##Figure S Diversity
+## Figure S Diversity
 ```
 # Load required libraries
 library(phyloseq)     # plot_richness()
